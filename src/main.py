@@ -1,4 +1,4 @@
-from pyparsing import Optional, Literal, OneOrMore, oneOf, alphanums, Or, Word, alphas8bit, nums, printables, SkipTo, LineStart, ZeroOrMore, LineEnd
+from pyparsing import Optional, Literal, OneOrMore, oneOf, alphanums, Or, Word, alphas8bit, nums, printables, SkipTo, LineStart, ZeroOrMore, LineEnd, Group
 import pprint as pp
 import sys
 import re
@@ -36,23 +36,37 @@ word_bold = (
     Literal("**").suppress()
 )
 
+
+#TODO: put lineEnd in word parser
 word_def = (
     LineStart() +
     Concat(SkipTo(Word("►¶"))).setResultsName("definition") +
     Literal("►").suppress() +
-    Cleanup(SkipTo(Word("(|.¶")).setResultsName("words")) +
+    Cleanup(SkipTo(Word("|.¶")).setResultsName("words")) +
+    # Optional(
+        SkipTo(Literal("¶")).suppress() +
+        Literal("¶").suppress() +
+        Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources") +
+    # ) +
     ZeroOrMore(
         SkipTo(Word("►¶")).suppress() +
         Literal("►").suppress() +
-        Concat(SkipTo(Word("(|.¶"))).setResultsName("words")
-    ) +
-    Optional(
-        Literal("¶") +
-        OneOrMore(
-            Word("¶").suppress() +
-            Concat(SkipTo(Word("¶") ^ LineEnd())).setResultsName("source")
-        )
+        Concat(SkipTo(Word("|.¶"))).setResultsName("words") +
+        # Optional(
+            SkipTo(Literal("¶")).suppress() +
+            Literal("¶").suppress() +
+            Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources")
+        # )
     )
+    # (
+    #     SkipTo(Literal("¶")).suppress() +
+    #     Literal("¶").suppress() +
+    #     Concat(SkipTo(Word("¶►") ^ LineEnd())).setResultsName("sources") +
+    #     ZeroOrMore(
+    #         Literal("¶►").suppress() +
+    #         Concat(SkipTo(Word("¶►") ^ LineEnd())).setResultsName("sources")
+    #     )
+    # )
 )
 
 parsed = Concat(
@@ -64,17 +78,31 @@ parsed = Concat(
 )
 
 
+def process_parsed(parsed):
+    # p_list = []
+
+    ldict = locals()
+    exec("p_list = " + repr(parsed), globals(), ldict)
+
+    p_list = ldict['p_list']
+
+    # pp.pprint(p_list)
+    return {
+        'definition': p_list[1]['definition'],
+        'words': [
+            {'word': a, 'source': b} for (a, b) in
+            list(zip(p_list[1]['words'], p_list[1]['sources']))
+        ]
+    }
+
+
 def test(start, end):
     parsed_stuff = []
     for line in word_text[start:end]:
-        parsed = list(word_def.scanString(line))
-        if parsed != []:
-            # print("yes")
-            parsed_stuff.append(parsed)
-         # else:
-            # print("no")
+        try:
+            parsed = word_def.parseString(line)
+            parsed_stuff.append(process_parsed(parsed))
+        except:
+            pass
 
     return parsed_stuff
-
-def printTest(start, end):
-    []
