@@ -3,6 +3,7 @@ import pprint as pp
 import sys
 import re
 import unicodedata
+import json
 # import pyparsing as pp
 
 alphas = alphanums + alphas8bit
@@ -19,7 +20,7 @@ word_text = []
 
 with open("../data/input.md", 'r') as input_doc:
     input_text = input_doc.read()
-    with open("../data/output.md", 'a') as output_doc:
+    with open("../data/output.md", 'w') as output_doc:
         print(len(input_text.split("\n")))
         for line in input_text.split("\n"):
             # print("Word " + str(i) + " --- " + line)
@@ -43,20 +44,19 @@ word_def = (
     Concat(SkipTo(Word("►¶"))).setResultsName("definition") +
     Literal("►").suppress() +
     Cleanup(SkipTo(Word("|.¶")).setResultsName("words")) +
-    # Optional(
-        SkipTo(Literal("¶")).suppress() +
-        Literal("¶").suppress() +
-        Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources") +
-    # ) +
+
+    SkipTo(Literal("¶")).suppress() +
+    Literal("¶").suppress() +
+    Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources") +
+
     ZeroOrMore(
         SkipTo(Word("►¶")).suppress() +
         Literal("►").suppress() +
         Concat(SkipTo(Word("|.¶"))).setResultsName("words") +
-        # Optional(
-            SkipTo(Literal("¶")).suppress() +
-            Literal("¶").suppress() +
-            Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources")
-        # )
+
+        SkipTo(Literal("¶")).suppress() +
+        Literal("¶").suppress() +
+        Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources")
     )
     # (
     #     SkipTo(Literal("¶")).suppress() +
@@ -106,3 +106,7 @@ def test(start, end):
             pass
 
     return parsed_stuff
+
+def write(start, end):
+    with open("../data/output.json", 'w') as output_json:
+        json.dump(test(start, end), output_json)
