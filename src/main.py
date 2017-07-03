@@ -42,31 +42,15 @@ word_bold = (
 word_def = (
     LineStart() +
     Concat(SkipTo(Word("►¶"))).setResultsName("definition") +
-    Literal("►").suppress() +
-    Cleanup(SkipTo(Word("|.¶")).setResultsName("words")) +
-
-    SkipTo(Literal("¶")).suppress() +
-    Literal("¶").suppress() +
-    Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources") +
-
-    ZeroOrMore(
-        SkipTo(Word("►¶")).suppress() +
+    OneOrMore(
         Literal("►").suppress() +
         Concat(SkipTo(Word("|.¶"))).setResultsName("words") +
 
         SkipTo(Literal("¶")).suppress() +
         Literal("¶").suppress() +
-        Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources")
+        Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources") +
+        SkipTo(Word("►¶")).suppress()
     )
-    # (
-    #     SkipTo(Literal("¶")).suppress() +
-    #     Literal("¶").suppress() +
-    #     Concat(SkipTo(Word("¶►") ^ LineEnd())).setResultsName("sources") +
-    #     ZeroOrMore(
-    #         Literal("¶►").suppress() +
-    #         Concat(SkipTo(Word("¶►") ^ LineEnd())).setResultsName("sources")
-    #     )
-    # )
 )
 
 parsed = Concat(
@@ -106,6 +90,7 @@ def test(start, end):
             pass
 
     return parsed_stuff
+
 
 def write(start, end):
     with open("../data/output.json", 'w') as output_json:
