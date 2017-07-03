@@ -42,14 +42,16 @@ word_def = (
     Literal("►").suppress() +
     Cleanup(SkipTo(Word("(|.¶")).setResultsName("words")) +
     ZeroOrMore(
-        SkipTo(Literal("►")).suppress() +
+        SkipTo(Word("►¶")).suppress() +
         Literal("►").suppress() +
         Concat(SkipTo(Word("(|.¶"))).setResultsName("words")
     ) +
-    Optional(Literal("¶")) +
-    OneOrMore(
-        Word("¶").suppress() +
-        Concat(SkipTo(Word("¶") ^ LineEnd())).setResultsName("source")
+    Optional(
+        Literal("¶") +
+        OneOrMore(
+            Word("¶").suppress() +
+            Concat(SkipTo(Word("¶") ^ LineEnd())).setResultsName("source")
+        )
     )
 )
 
