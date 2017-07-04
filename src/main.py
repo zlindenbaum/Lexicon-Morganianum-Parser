@@ -7,7 +7,7 @@ import json
 # import pyparsing as pp
 
 alphas = alphanums + alphas8bit
-genders = "m. n. f. pl. m.pl. n.pl. f.pl."
+genders = "m. n. f. pl. m.pl. n.pl. f.pl. indecl."
 
 
 def Concat(parser): return parser.setParseAction(lambda x: " ".join(x))
