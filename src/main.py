@@ -67,7 +67,7 @@ parsed = Concat(
 )
 
 def schain(inp):
-    return inp.strip().replace('*', '')
+    return inp.replace('*', '').replace('\\', '').replace("/", '').strip()
 
 def process_parsed(parsed):
     ldict = locals()
