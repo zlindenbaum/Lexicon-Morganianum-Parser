@@ -1,4 +1,4 @@
-from pyparsing import Optional, Literal, OneOrMore, oneOf, alphanums, Or, Word, alphas8bit, nums, printables, SkipTo, LineStart, ZeroOrMore, LineEnd, Group
+from pyparsing import Optional, Literal, OneOrMore, oneOf, alphanums, Or, Word, alphas8bit, nums, printables, SkipTo, LineStart, ZeroOrMore, LineEnd, Group, NotAny
 import pprint as pp
 import sys
 import re
@@ -47,21 +47,31 @@ word_def = (
     Concat(SkipTo(Word("►¶"))).setResultsName("definition") +
     OneOrMore(
         Literal("►").suppress() +
+        NotAny(Literal("►")).suppress() +
+
         Concat(SkipTo(
             oneOf(genders) ^
             Word("|.¶")
         )).setResultsName("words") +
-        Concat(Optional(OneOrMore(oneOf(genders) + Optional(Literal(" "))), default="UNKNOWN").setResultsName("gender")) +
 
-        SkipTo(Literal("¶")).suppress() +
-        Literal("¶").suppress() +
-        Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources") +
-        SkipTo(Word("►¶")).suppress()
+        Concat(Optional(OneOrMore(
+            oneOf(genders) +
+            Optional(Literal(" ")).suppress()
+        ), default="UNKNOWN").setResultsName("gender")) +
+
+        Optional((
+            SkipTo(Literal("¶")).suppress() +
+            Literal("¶").suppress() +
+            Concat(SkipTo(Literal("►") ^ LineEnd()))
+            # SkipTo(Word("►¶")).suppress()
+        ).setResultsName("sources"), default="UNKNOWN")
     ) +
-    Optional(
+
+    Optional((
+        SkipTo(Literal("►►")).suppress() +
         Literal("►►").suppress() +
-        SkipTo(LineEnd()).setResultsName("notes")
-    )
+        SkipTo(LineEnd())
+    ).setResultsName("notes"), default="UNKNOWN")
 )
 
 parsed = Concat(
@@ -80,15 +90,36 @@ def process_parsed(parsed):
     exec("p_list = " + repr(parsed), globals(), ldict) #because pyparsing is stupid
     p_list = ldict['p_list']
 
+    tmp_sources = []
+    tmp_notes = []
+
+    for source in p_list[1]['sources']:
+        if source == "UNKNOWN":
+            tmp_sources.append(source)
+        else:
+            tmp_sources.append(source[0][0])
+
+    p_list[1]['sources'] = tmp_sources
+
+    for note in p_list[1]['notes']:
+        if note == "UNKNOWN":
+            tmp_notes.append(note)
+        else:
+            tmp_notes.append(note[0][0])
+
+    p_list[1]['notes'] = tmp_notes
+
     # pp.pprint(p_list)
-    return {
+    # return
+
+    return dict({
         'definition': schain(p_list[1]['definition'][0]),
         'words': [
             {'word': schain(a), 'source': schain(b), 'gender': schain(c)} for (a, b, c) in
             list(zip(p_list[1]['words'], p_list[1]['sources'], p_list[1]['gender']))
         ],
         'notes': schain(p_list[1]['notes'][0])
-    }
+    })
 
 
 def test(start, end):
@@ -97,6 +128,9 @@ def test(start, end):
         try:
             parsed = word_def.parseString(line)
             parsed_stuff.append(process_parsed(parsed))
+            # parsed_stuff.append(parsed)
+        except KeyError as e:
+            print(e)
         except:
             pass
 
