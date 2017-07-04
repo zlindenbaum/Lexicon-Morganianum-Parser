@@ -41,6 +41,7 @@ word_bold = (
 
 word_def = (
     LineStart() +
+    Optional(OneOrMore(Literal("/")) + Word(nums)).suppress() +
     Concat(SkipTo(Word("►¶"))).setResultsName("definition") +
     OneOrMore(
         Literal("►").suppress() +
@@ -65,6 +66,8 @@ parsed = Concat(
     )
 )
 
+def schain(inp):
+    return inp.strip().replace('*', '')
 
 def process_parsed(parsed):
     ldict = locals()
@@ -73,9 +76,9 @@ def process_parsed(parsed):
 
     # pp.pprint(p_list)
     return {
-        'definition': p_list[1]['definition'][0],
+        'definition': schain(p_list[1]['definition'][0]),
         'words': [
-            {'word': a, 'source': b, 'gender': c} for (a, b, c) in
+            {'word': schain(a), 'source': schain(b), 'gender': schain(c)} for (a, b, c) in
             list(zip(p_list[1]['words'], p_list[1]['sources'], p_list[1]['gender']))
         ]
     }
