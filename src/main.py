@@ -73,7 +73,7 @@ def process_parsed(parsed):
 
     # pp.pprint(p_list)
     return {
-        'definition': p_list[1]['definition'],
+        'definition': p_list[1]['definition'][0],
         'words': [
             {'word': a, 'source': b, 'gender': c} for (a, b, c) in
             list(zip(p_list[1]['words'], p_list[1]['sources'], p_list[1]['gender']))
