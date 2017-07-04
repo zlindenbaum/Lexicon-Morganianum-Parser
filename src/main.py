@@ -39,8 +39,6 @@ word_bold = (
 )
 
 
-#TODO: make sources optional
-
 word_def = (
     LineStart() +
     Optional(Word(nums + " /")).suppress() +
@@ -51,7 +49,8 @@ word_def = (
 
         Concat(SkipTo(
             oneOf(genders) ^
-            Word("|.¶")
+            Word("|¶►") ^
+            LineEnd()
         )).setResultsName("words") +
 
         Concat(Optional(OneOrMore(
@@ -64,14 +63,15 @@ word_def = (
             Literal("¶").suppress() +
             Concat(SkipTo(Literal("►") ^ LineEnd()))
             # SkipTo(Word("►¶")).suppress()
-        ).setResultsName("sources"), default="UNKNOWN")
-    ) +
+        ).setResultsName("sources"), default="UNKNOWN") +
 
-    Optional((
-        SkipTo(Literal("►►")).suppress() +
-        Literal("►►").suppress() +
-        SkipTo(LineEnd())
-    ).setResultsName("notes"), default="UNKNOWN")
+        Optional((
+            SkipTo(Literal("►►")).suppress() +
+            Literal("►►").suppress() +
+            SkipTo(Literal("►") ^ LineEnd())
+        ).setResultsName("notes"), default="UNKNOWN")
+    )
+
 )
 
 parsed = Concat(
@@ -107,6 +107,9 @@ def process_parsed(parsed):
         else:
             tmp_notes.append(note[0][0])
 
+    if 'words' not in p_list[1].keys():
+        p_list[1]['words'] = ["UNKNOWN"]
+
     p_list[1]['notes'] = tmp_notes
 
     # pp.pprint(p_list)
@@ -130,7 +133,8 @@ def test(start, end):
             parsed_stuff.append(process_parsed(parsed))
             # parsed_stuff.append(parsed)
         except KeyError as e:
-            print(e)
+            print(line)
+            print(e.with_traceback())
         except:
             pass
 
