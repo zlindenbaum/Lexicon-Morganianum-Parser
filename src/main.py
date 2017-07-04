@@ -7,7 +7,7 @@ import json
 # import pyparsing as pp
 
 alphas = alphanums + alphas8bit
-genders = "m. n. f. pl."
+genders = "m. n. f. pl. m.pl. n.pl. f.pl."
 
 
 def Concat(parser): return parser.setParseAction(lambda x: " ".join(x))
@@ -49,7 +49,7 @@ word_def = (
             oneOf(genders) ^
             Word("|.¶")
         )).setResultsName("words") +
-        Optional(oneOf(genders).setResultsName("gender"), default="UNKNOWN") +
+        Concat(Optional(OneOrMore(oneOf(genders) + Optional(Literal(" "))), default="UNKNOWN").setResultsName("gender")) +
 
         SkipTo(Literal("¶")).suppress() +
         Literal("¶").suppress() +
@@ -67,7 +67,7 @@ parsed = Concat(
 )
 
 def schain(inp):
-    return inp.replace('*', '').replace('\\', '').replace('/', '').replace('|', '').strip()
+    return inp.replace('*', '').replace('\\', '').replace('/', '').strip()
 
 def process_parsed(parsed):
     ldict = locals()
