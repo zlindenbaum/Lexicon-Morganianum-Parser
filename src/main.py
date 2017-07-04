@@ -7,6 +7,7 @@ import json
 # import pyparsing as pp
 
 alphas = alphanums + alphas8bit
+genders = "m. n. f. pl."
 
 
 def Concat(parser): return parser.setParseAction(lambda x: " ".join(x))
@@ -38,13 +39,16 @@ word_bold = (
 )
 
 
-#TODO: put lineEnd in word parser
 word_def = (
     LineStart() +
     Concat(SkipTo(Word("►¶"))).setResultsName("definition") +
     OneOrMore(
         Literal("►").suppress() +
-        Concat(SkipTo(Word("|.¶"))).setResultsName("words") +
+        Concat(SkipTo(
+            oneOf(genders) ^
+            Word("|.¶")
+        )).setResultsName("words") +
+        Optional(oneOf(genders).setResultsName("gender"), default="UNKNOWN") +
 
         SkipTo(Literal("¶")).suppress() +
         Literal("¶").suppress() +
@@ -63,19 +67,16 @@ parsed = Concat(
 
 
 def process_parsed(parsed):
-    # p_list = []
-
     ldict = locals()
-    exec("p_list = " + repr(parsed), globals(), ldict)
-
+    exec("p_list = " + repr(parsed), globals(), ldict) #because pyparsing is stupid
     p_list = ldict['p_list']
 
     # pp.pprint(p_list)
     return {
         'definition': p_list[1]['definition'],
         'words': [
-            {'word': a, 'source': b} for (a, b) in
-            list(zip(p_list[1]['words'], p_list[1]['sources']))
+            {'word': a, 'source': b, 'gender': c} for (a, b, c) in
+            list(zip(p_list[1]['words'], p_list[1]['sources'], p_list[1]['gender']))
         ]
     }
 
