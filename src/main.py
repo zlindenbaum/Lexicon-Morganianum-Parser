@@ -39,6 +39,8 @@ word_bold = (
 )
 
 
+#TODO: make sources optional
+
 word_def = (
     LineStart() +
     Optional(Word(nums + " /")).suppress() +
@@ -55,6 +57,10 @@ word_def = (
         Literal("¶").suppress() +
         Concat(SkipTo(Literal("►") ^ LineEnd())).setResultsName("sources") +
         SkipTo(Word("►¶")).suppress()
+    ) +
+    Optional(
+        Literal("►►").suppress() +
+        SkipTo(LineEnd()).setResultsName("notes")
     )
 )
 
@@ -80,7 +86,8 @@ def process_parsed(parsed):
         'words': [
             {'word': schain(a), 'source': schain(b), 'gender': schain(c)} for (a, b, c) in
             list(zip(p_list[1]['words'], p_list[1]['sources'], p_list[1]['gender']))
-        ]
+        ],
+        'notes': schain(p_list[1]['notes'][0])
     }
 
 
