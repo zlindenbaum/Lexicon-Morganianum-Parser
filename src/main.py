@@ -41,7 +41,7 @@ word_bold = (
 
 word_def = (
     LineStart() +
-    Optional(OneOrMore(Literal("/")) + Word(nums)).suppress() +
+    Optional(Word(nums + " /")).suppress() +
     Concat(SkipTo(Word("►¶"))).setResultsName("definition") +
     OneOrMore(
         Literal("►").suppress() +
@@ -67,7 +67,7 @@ parsed = Concat(
 )
 
 def schain(inp):
-    return inp.replace('*', '').replace('\\', '').replace("/", '').strip()
+    return inp.replace('*', '').replace('\\', '').replace('/', '').replace('|', '').strip()
 
 def process_parsed(parsed):
     ldict = locals()
