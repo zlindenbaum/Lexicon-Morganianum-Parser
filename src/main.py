@@ -8,6 +8,7 @@ import json
 
 alphas = alphanums + alphas8bit
 genders = "m. n. f. pl. m.pl. n.pl. f.pl. indecl."
+word_types = "adj. vb. n."
 
 
 def Concat(parser): return parser.setParseAction(lambda x: " ".join(x))
@@ -38,7 +39,6 @@ word_bold = (
     Literal("**").suppress()
 )
 
-
 word_def = (
     LineStart() +
     Optional(Word(nums + " /")).suppress() +
@@ -63,15 +63,15 @@ word_def = (
             Literal("¶").suppress() +
             Concat(SkipTo(Literal("►") ^ LineEnd()))
             # SkipTo(Word("►¶")).suppress()
-        ).setResultsName("sources"), default="UNKNOWN") +
+        ).setResultsName("sources"), default="UNKNOWN")
 
-        Optional((
-            SkipTo(Literal("►►")).suppress() +
-            Literal("►►").suppress() +
-            SkipTo(Literal("►") ^ LineEnd())
-        ).setResultsName("notes"), default="UNKNOWN")
-    )
+    ) +
 
+    Optional((
+        SkipTo(Literal("►►")).suppress() +
+        Literal("►►").suppress() +
+        SkipTo(Literal("►") ^ LineEnd())
+    ).setResultsName("notes"), default="UNKNOWN")
 )
 
 parsed = Concat(
@@ -96,6 +96,8 @@ def process_parsed(parsed):
     for source in p_list[1]['sources']:
         if source == "UNKNOWN":
             tmp_sources.append(source)
+        elif source == "":
+            tmp_sources.append("UNKNOWN")
         else:
             tmp_sources.append(source[0][0])
 
