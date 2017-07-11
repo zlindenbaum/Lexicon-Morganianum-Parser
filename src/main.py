@@ -82,10 +82,12 @@ parsed = Concat(
     )
 )
 
+
 def schain(inp):
     return inp.replace('*', '').replace('\\', '').replace('/', '').strip()
 
-def process_parsed(parsed):
+
+def process_parsed(original, parsed):
     ldict = locals()
     exec("p_list = " + repr(parsed), globals(), ldict) #because pyparsing is stupid
     p_list = ldict['p_list']
@@ -118,6 +120,7 @@ def process_parsed(parsed):
     # return
 
     return dict({
+        'unparsed': original,
         'definition': schain(p_list[1]['definition'][0]),
         'words': [
             {'word': schain(a), 'source': schain(b), 'gender': schain(c)} for (a, b, c) in
@@ -132,7 +135,7 @@ def test(start, end):
     for line in word_text[start:end]:
         try:
             parsed = word_def.parseString(line)
-            parsed_stuff.append(process_parsed(parsed))
+            parsed_stuff.append(process_parsed(line, parsed))
             # parsed_stuff.append(parsed)
         except KeyError as e:
             print(line)
