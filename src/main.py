@@ -120,6 +120,7 @@ def process_parsed(original, parsed):
     # return
 
     return dict({
+        'isParsed': True,
         'unparsed': original,
         'definition': schain(p_list[1]['definition'][0]),
         'words': [
@@ -137,11 +138,11 @@ def test(start, end):
             parsed = word_def.parseString(line)
             parsed_stuff.append(process_parsed(line, parsed))
             # parsed_stuff.append(parsed)
-        except KeyError as e:
-            print(line)
-            print(e.with_traceback())
+        # except KeyError as e:
+        #     print(line)
+        #     print(e.with_traceback())
         except:
-            pass
+            parsed_stuff.append({'unparsed': line, 'isParsed': False})
 
     return parsed_stuff
 
