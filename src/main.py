@@ -71,7 +71,7 @@ word_def = (
         SkipTo(Literal("►►")).suppress() +
         Literal("►►").suppress() +
         SkipTo(Literal("►") ^ LineEnd())
-    ).setResultsName("notes"), default="UNKNOWN")
+    ).setResultsName("misc"), default="UNKNOWN")
 )
 
 parsed = Concat(
@@ -91,7 +91,7 @@ def process_parsed(parsed):
     p_list = ldict['p_list']
 
     tmp_sources = []
-    tmp_notes = []
+    tmp_misc = []
 
     for source in p_list[1]['sources']:
         if source == "UNKNOWN":
@@ -103,16 +103,16 @@ def process_parsed(parsed):
 
     p_list[1]['sources'] = tmp_sources
 
-    for note in p_list[1]['notes']:
-        if note == "UNKNOWN":
-            tmp_notes.append(note)
+    for misc in p_list[1]['misc']:
+        if misc == "UNKNOWN":
+            tmp_misc.append(misc)
         else:
-            tmp_notes.append(note[0][0])
+            tmp_misc.append(misc[0][0])
 
     if 'words' not in p_list[1].keys():
         p_list[1]['words'] = ["UNKNOWN"]
 
-    p_list[1]['notes'] = tmp_notes
+    p_list[1]['misc'] = tmp_misc
 
     # pp.pprint(p_list)
     # return
@@ -123,7 +123,7 @@ def process_parsed(parsed):
             {'word': schain(a), 'source': schain(b), 'gender': schain(c)} for (a, b, c) in
             list(zip(p_list[1]['words'], p_list[1]['sources'], p_list[1]['gender']))
         ],
-        'notes': schain(p_list[1]['notes'][0])
+        'misc': schain(p_list[1]['misc'][0])
     })
 
 
