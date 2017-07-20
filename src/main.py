@@ -56,14 +56,14 @@ word_def = (
         Concat(Optional(OneOrMore(
             oneOf(genders) +
             Optional(Literal(" ")).suppress()
-        ), default="UNKNOWN").setResultsName("gender")) +
+        ), default="na").setResultsName("gender")) +
 
         Optional((
             SkipTo(Literal("¶")).suppress() +
             Literal("¶").suppress() +
             Concat(SkipTo(Literal("►") ^ LineEnd()))
             # SkipTo(Word("►¶")).suppress()
-        ).setResultsName("sources"), default="UNKNOWN")
+        ).setResultsName("sources"), default="na")
 
     ) +
 
@@ -71,7 +71,7 @@ word_def = (
         SkipTo(Literal("►►")).suppress() +
         Literal("►►").suppress() +
         SkipTo(Literal("►") ^ LineEnd())
-    ).setResultsName("misc"), default="UNKNOWN")
+    ).setResultsName("misc"), default="na")
 )
 
 parsed = Concat(
@@ -96,23 +96,23 @@ def process_parsed(original, parsed):
     tmp_misc = []
 
     for source in p_list[1]['sources']:
-        if source == "UNKNOWN":
+        if source == "na":
             tmp_sources.append(source)
         elif source == "":
-            tmp_sources.append("UNKNOWN")
+            tmp_sources.append("na")
         else:
             tmp_sources.append(source[0][0])
 
     p_list[1]['sources'] = tmp_sources
 
     for misc in p_list[1]['misc']:
-        if misc == "UNKNOWN":
+        if misc == "na":
             tmp_misc.append(misc)
         else:
             tmp_misc.append(misc[0][0])
 
     if 'words' not in p_list[1].keys():
-        p_list[1]['words'] = ["UNKNOWN"]
+        p_list[1]['words'] = ["na"]
 
     p_list[1]['misc'] = tmp_misc
 
