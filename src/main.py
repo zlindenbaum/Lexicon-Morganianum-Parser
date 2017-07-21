@@ -18,10 +18,22 @@ def Cleanup(parser):
     return parser.setParseAction(lambda x: list(parsed.scanString(x))[0][0])
 
 
+reps = {
+    'â': 'ā',
+    'ê': 'ē',
+    'î': 'ī',
+    'ô': 'ō',
+    'û': 'ū'
+}
+
+
+def macronize(text):
+    return ''.join(reps.get(l, l) for l in text)
+
 word_text = []
 
 with open("../data/input.md", 'r') as input_doc:
-    input_text = input_doc.read()
+    input_text = macronize(input_doc.read())
     with open("../data/output.md", 'w') as output_doc:
         print(len(input_text.split("\n")))
         for line in input_text.split("\n"):
